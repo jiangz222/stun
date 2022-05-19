@@ -59,9 +59,23 @@ func main() {
 	}
 	log = logging.NewDefaultLeveledLoggerForScope("", logLevel, os.Stdout)
 
+	// mapping 是由内向外转发的判断
+	// https://datatracker.ietf.org/doc/html/rfc4787#section-4.1
+	// Endpoint-Independent Mapping: 当内部的internalIP:port建立了对外externalIp:port的链接，从internalIP:port发出到任何外部的包，会复用这条链接，即nat1
+	// Address-Dependent Mapping: 当内部的internalIP:port建立了对外externalIp:port的链接，从internalIP:port发出到externalIp的包，才会复用这条链接，即nat2
+	// Address and Port-Dependent Mapping: 当内部的internalIP:port建立了对外externalIp:port的链接，从internalIP:port发出到externalIp:port的包，才会复用这条链接，即nat3
+	// 如何做上面的类型判断,即 mappingTests的实现:
+	// https://datatracker.ietf.org/doc/html/rfc5780#section-4.3
 	if err := mappingTests(*addrStrPtr); err != nil {
 		log.Warn("NAT mapping behavior: inconclusive")
 	}
+	// filter 是外往内转发的判断
+	// https://datatracker.ietf.org/doc/html/rfc4787#section-5
+	// Endpoint-Independent Filtering: 当内部的internalIP:port建立了对外externalIp:port的链接，NAT会转发任何请求都到internalIP:port; 即一般说的nat1
+	// Address-Dependent Filtering:当内部的internalIP:port建立了对外externalIp:port的链接，NAT只会转发externalIp的请求都到internalIP:port；即一般说的nat2
+	// Address and Port-Dependent Filtering::当内部的internalIP:port建立了对外externalIp:port的链接，NAT只会转发externalIp:port的请求都到internalIP:port；即一般说的nat3
+	// 如何做上面的判断，即filteringTests：
+	// https://datatracker.ietf.org/doc/html/rfc5780#section-4.4
 	if err := filteringTests(*addrStrPtr); err != nil {
 		log.Warn("NAT filtering behavior: inconclusive")
 	}

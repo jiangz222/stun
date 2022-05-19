@@ -17,8 +17,9 @@ func main() {
 	flag.Parse()
 	addr := flag.Arg(0)
 	if addr == "" {
-		addr = "stun.l.google.com:19302"
+		addr = "47.98.119.62:3478"
 	}
+	fmt.Println(addr)
 	// we only try the first address, so restrict ourselves to IPv4
 	c, err := stun.Dial("udp4", addr)
 	if err != nil {
@@ -28,11 +29,12 @@ func main() {
 		if res.Error != nil {
 			log.Fatalln(res.Error)
 		}
+		fmt.Printf("%+v\n", res)
 		var xorAddr stun.XORMappedAddress
 		if getErr := xorAddr.GetFrom(res.Message); getErr != nil {
 			log.Fatalln(getErr)
 		}
-		fmt.Println(xorAddr)
+		fmt.Println("get", xorAddr)
 	}); err != nil {
 		log.Fatal("do:", err)
 	}
